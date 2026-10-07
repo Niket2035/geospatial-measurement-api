@@ -5,8 +5,10 @@ from fastapi import UploadFile
 
 
 UPLOAD_DIR = Path("uploads")
+
 ALLOWED_EXTENSIONS = {".kml", ".zip"}
-MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+
+MAX_FILE_SIZE = 50 * 1024 * 1024
 
 
 async def save_uploaded_file(file: UploadFile) -> dict:
@@ -36,11 +38,15 @@ async def save_uploaded_file(file: UploadFile) -> dict:
 
     try:
         with file_path.open("wb") as buffer:
+
             while chunk := await file.read(1024 * 1024):
+
                 total_size += len(chunk)
 
                 if total_size > MAX_FILE_SIZE:
-                    raise ValueError("File size exceeds the 50 MB limit.")
+                    raise ValueError(
+                        "File size exceeds the 50 MB limit."
+                    )
 
                 buffer.write(chunk)
 
@@ -55,6 +61,7 @@ async def save_uploaded_file(file: UploadFile) -> dict:
         "filename": original_filename,
         "file_type": extension.lstrip("."),
         "stored_filename": safe_filename,
+        "file_path": str(file_path),
         "file_size": total_size,
         "status": "UPLOADED",
     }
