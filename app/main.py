@@ -1,0 +1,14 @@
+from fastapi import FastAPI
+
+app = FastAPI(
+    title="Geospatial File Measurement API",
+    description="API for processing geospatial files and calculating measurements.",
+    version="1.0.0",
+)
+
+
+@app.get("/")
+def root():
+    return {
+        "message": "Geospatial File Measurement API is running"
+    }
