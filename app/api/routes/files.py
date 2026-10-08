@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+import logging
 
 from app.database import get_db
 from app.models import Feature, File, Measurement
@@ -13,6 +14,13 @@ from app.services.geospatial_processor import (
     process_geospatial_file,
 )
 
+from app.schemas import (
+    FileResponse,
+    MeasurementsResponse,
+    UploadResponse,
+)
+
+logger = logging.getLogger(__name__) 
 
 router = APIRouter(
     prefix="/api/files",
@@ -20,7 +28,7 @@ router = APIRouter(
 )
 
 
-@router.post("/")
+@router.post("/", response_model=UploadResponse)
 async def upload_file(
     file: UploadFile,
     db: Session = Depends(get_db),
@@ -75,14 +83,18 @@ async def upload_file(
     except Exception as exc:
 
         db.rollback()
+        
+        logger.error(
+            "failed to process file: %s", exc, exc_info=True
+        )
 
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to process file: {exc}",
+            detail=f"Failed to process file.",
         ) from exc
 
 
-@router.get("/{file_id}")
+@router.get("/{file_id}", response_model=FileResponse)
 def get_file(
     file_id: str,
     db: Session = Depends(get_db),
@@ -113,7 +125,10 @@ def get_file(
     }
 
 
-@router.get("/{file_id}/measurements/")
+@router.get(
+    "/{file_id}/measurements/",
+    response_model=MeasurementsResponse,
+)
 def get_measurements(
     file_id: str,
     db: Session = Depends(get_db),

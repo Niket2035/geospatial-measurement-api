@@ -10,9 +10,7 @@ def calculate_measurements(
     Calculate measurements for supported geometry types.
     """
 
-    measurement_gdf, measurement_crs = (
-        transform_for_measurement(gdf)
-    )
+    measurement_gdf, _measurement_crs = transform_for_measurement(gdf)
 
     measurements = []
 
